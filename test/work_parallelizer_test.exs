@@ -2,9 +2,11 @@ defmodule WorkParallelizerTest do
   use ExUnit.Case, async: true
   doctest WorkParallelizer
 
+  @prove_concurrency true
+
   test "chunks the numbers 1 through 50 in groups of 5 and gets their sum" do
     worker = fn chunk ->
-      Process.sleep(2_500)
+      if @prove_concurrency, do: Process.sleep(2_500)
       Enum.sum(chunk)
     end
 
@@ -17,7 +19,7 @@ defmodule WorkParallelizerTest do
     duration = System.monotonic_time(:millisecond) - start_time
 
     # Sleep and duration test only for example to prove concurrency
-    assert duration >= 2500 and duration < 2600
+    if @prove_concurrency, do: assert(duration >= 2500 and duration < 2600)
 
     assert results == [15, 40, 65, 90, 115, 140, 165, 190, 215, 240]
   end
