@@ -17,7 +17,8 @@ defmodule WorkParallelizerTest do
     duration = System.monotonic_time(:millisecond) - start_time
 
     # Sleep and duration test only for example to prove concurrency
-    assert duration < 2600
+    assert duration >= 2500 and duration < 2600
+
     assert results == [15, 40, 65, 90, 115, 140, 165, 190, 215, 240]
   end
 
@@ -39,5 +40,34 @@ defmodule WorkParallelizerTest do
              ["over", "lazy"],
              ["quick", "brown", "jumps"]
            ]
+  end
+
+  test "groups people by their birth year, sorts the groups alphabetically, and concatentates the names in the group" do
+    test_data = %{
+      "John" => 1980,
+      "Jane" => 1980,
+      "Bob" => 1985,
+      "Sally" => 1985,
+      "Joe" => 1990,
+      "Zoe" => 1990,
+      "Sue" => 1990
+    }
+
+    worker = fn chunk ->
+      chunk
+      |> Stream.map(fn {name, _} -> name end)
+      |> Enum.sort()
+      |> Enum.join("-")
+    end
+
+    distributor = fn data ->
+      data
+      |> Enum.group_by(fn {_, year} -> year end)
+      |> Enum.map(fn {_, l} -> l end)
+    end
+
+    results = WorkParallelizer.process(test_data, worker, distributor)
+
+    assert results == ["Jane-John", "Bob-Sally", "Joe-Sue-Zoe"]
   end
 end
