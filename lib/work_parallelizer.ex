@@ -8,10 +8,7 @@ defmodule WorkParallelizer do
   and sends chunks to the worker to be processed in concurrent tasks
 
   ## Examples
-
-      iex> worker = fn chunk -> Enum.sum(chunk) end
-      iex> distributor = fn data -> Enum.chunk_every(data, 5) end
-      iex> WorkParallelizer.process(1..15, worker, distributor)
+      iex> WorkParallelizer.process(1..15, &Enum.sum(&1), &Enum.chunk_every(&1, 5))
       [15, 40, 65]
 
   """
